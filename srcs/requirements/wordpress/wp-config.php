@@ -1,4 +1,12 @@
 <?php
+// Define WordPress URLs first (before any potential usage)
+if (!defined('WP_HOME')) {
+    define('WP_HOME', 'https://' . getenv('DOMAIN_NAME'));
+}
+if (!defined('WP_SITEURL')) {
+    define('WP_SITEURL', WP_HOME);
+}
+
 // Database Configuration
 define('DB_NAME', getenv('WORDPRESS_DB_NAME'));
 define('DB_USER', getenv('WORDPRESS_DB_USER'));
@@ -54,23 +62,15 @@ define('AUTOMATIC_UPDATER_DISABLED', false);
 define('WP_HTTP_BLOCK_EXTERNAL', false);
 define('DISALLOW_UNFILTERED_HTML', true);
 
-// Define WordPress URLs
-define('WP_HOME', 'https://' . getenv('DOMAIN_NAME'));
-define('WP_SITEURL', 'https://' . getenv('DOMAIN_NAME'));
-
 // Define WordPress Content Directory
 define('WP_CONTENT_DIR', __DIR__ . '/wp-content');
+// Use WP_HOME instead of $_SERVER['HTTP_HOST']
 define('WP_CONTENT_URL', WP_HOME . '/wp-content');
 
-// Prevent direct file access
-if (!defined('ABSPATH')) {
-    exit('Direct file access not permitted');
-}
-
-// Absolute path to the WordPress directory. 
+// Absolute path to the WordPress directory
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__ . '/');
 }
 
-// Sets up WordPress vars and included files. 
+// Sets up WordPress vars and included files
 require_once ABSPATH . 'wp-settings.php';
