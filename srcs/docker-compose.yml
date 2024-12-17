@@ -30,6 +30,7 @@ services:
     container_name: wordpress
     depends_on:
       - mariadb
+      - redis
     volumes:
       - wordpress_data:/var/www/html
     env_file:

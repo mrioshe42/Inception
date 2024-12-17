@@ -6,6 +6,7 @@ while ! mysqladmin ping -h"mariadb" -u"${MYSQL_USER}" -p"$(cat /run/secrets/mysq
     sleep 2
 done
 
+
 sleep 10
 
 # Check if WordPress is already installed
@@ -35,6 +36,14 @@ fi
 if ! wp plugin is-active redis-cache --allow-root; then
     wp plugin activate redis-cache --allow-root
 fi
+
+# Configure Redis settings in wp-config.php if not already set
+wp config set WP_REDIS_HOST redis --allow-root
+wp config set WP_REDIS_PORT 6379 --allow-root
+wp config set WP_REDIS_TIMEOUT 1 --allow-root
+wp config set WP_REDIS_READ_TIMEOUT 1 --allow-root
+wp config set WP_REDIS_DATABASE 0 --allow-root
+wp config set WP_REDIS_PREFIX wordpress_ --allow-root
 
 # Set up object cache if not already set up
 if [ ! -f /var/www/html/wp-content/object-cache.php ]; then
