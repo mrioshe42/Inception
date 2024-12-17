@@ -1,0 +1,153 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: requirements/nginx
+    container_name: nginx
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+      - nginx_logs:/var/log/nginx
+      - ssh_logs:/var/log
+    env_file:
+      - .env
+    networks:
+      - inception_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  wordpress:
+    build:
+      context: requirements/wordpress
+    container_name: wordpress
+    depends_on:
+      - mariadb
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+      - .env
+    secrets:
+      - mysql_password
+    environment:
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/mysql_password
+    networks:
+      - inception_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  mariadb:
+    build:
+      context: requirements/mariadb
+    container_name: mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    env_file:
+     - .env
+    secrets:
+      - mysql_password
+      - mysql_root_password
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_root_password
+      - MYSQL_PASSWORD_FILE=/run/secrets/mysql_password
+    networks:
+      - inception_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+  redis:
+    build:
+      context: requirements/bonus/redis
+      dockerfile: Dockerfile
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - inception_network
+    volumes:
+      - ./requirements/bonus/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ftp:
+    build:
+      context: requirements/bonus/ftp
+      dockerfile: Dockerfile
+    container_name: ftp
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    volumes:
+      - wordpress_data:/var/www/html
+    env_file:
+     - .env
+    secrets:
+      - ftp_password
+    environment:
+      - FTP_PASS=/run/secrets/ftp_password
+    networks:
+      - inception_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+
+volumes:
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mrios-he/data/wordpress
+      o: bind
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mrios-he/data/mariadb
+      o: bind
+  nginx_logs:
+    driver: local
+  ssh_logs:
+    driver: local
+
+secrets:
+  mysql_password:
+    file: ../secrets/db_password.txt
+  mysql_root_password:
+    file: ../secrets/db_root_password.txt
+  ftp_password:
+    file: ../secrets/ftp_password.txt
+
+networks:
+  inception_network:
+    driver: bridge
