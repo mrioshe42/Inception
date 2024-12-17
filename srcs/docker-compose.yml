@@ -96,6 +96,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+  adminer:
+    build: 
+      context: requirements/bonus/adminer
+      dockerfile: Dockerfile
+    container_name: adminer
+    networks:
+      - inception_network
+    depends_on:
+      - mariadb
+    restart: always
 
   ftp:
     build:
