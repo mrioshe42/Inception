@@ -93,9 +93,10 @@ services:
           cpus: '0.3'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  
   adminer:
     build: 
       context: requirements/bonus/adminer

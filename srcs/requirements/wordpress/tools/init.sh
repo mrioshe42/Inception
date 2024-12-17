@@ -14,16 +14,13 @@ done
 
 sleep 10
 
-# Check if WordPress is already installed
-WP_INSTALLED=$(wp core is-installed --path=/var/www/html --allow-root 2>/dev/null || echo "false")
+# Set WP_HOME and WP_SITEURL in wp-config.php
+wp config set WP_HOME "https://${DOMAIN_NAME}" --allow-root --path=/var/www/html
+wp config set WP_SITEURL "https://${DOMAIN_NAME}" --allow-root --path=/var/www/html
 
-if [ "$WP_INSTALLED" = "false" ]; then
+# Check if WordPress is already installed
+if ! $(wp core is-installed --path=/var/www/html --allow-root); then
     echo "WordPress is not installed. Starting installation..."
-    
-    # Download WordPress core if not present
-    if [ ! -f /var/www/html/wp-includes/version.php ]; then
-        wp core download --path=/var/www/html --allow-root
-    fi
     
     # Create wp-config.php if it doesn't exist
     if [ ! -f /var/www/html/wp-config.php ]; then
@@ -41,7 +38,7 @@ if [ "$WP_INSTALLED" = "false" ]; then
     wp config set WP_REDIS_PORT 6379 --raw --allow-root --path=/var/www/html
     wp config set WP_REDIS_CLIENT phpredis --allow-root --path=/var/www/html
     wp config set WP_REDIS_DATABASE 0 --raw --allow-root --path=/var/www/html
-    wp config set WP_REDIS_PREFIX "${DOMAIN_NAME}" --allow-root --path=/var/www/html
+    wp config set WP_REDIS_PREFIX wp_ --allow-root --path=/var/www/html
     wp config set WP_CACHE true --raw --allow-root --path=/var/www/html
     
     # Install WordPress core
@@ -49,7 +46,7 @@ if [ "$WP_INSTALLED" = "false" ]; then
         --url="https://${DOMAIN_NAME}" \
         --title="Inception" \
         --admin_user="${WP_ADMIN_USER}" \
-        --admin_password="$(cat /run/secrets/wp_admin_password)" \
+        --admin_password="${WP_ADMIN_PASSWORD}" \
         --admin_email="${WP_ADMIN_EMAIL}" \
         --skip-email \
         --path=/var/www/html \
@@ -68,8 +65,12 @@ if ! wp plugin is-active redis-cache --allow-root --path=/var/www/html; then
     wp plugin activate redis-cache --allow-root --path=/var/www/html
 fi
 
-# Copy object-cache.php dropin
+# Create wp-content/object-cache.php if it doesn't exist
 if [ ! -f /var/www/html/wp-content/object-cache.php ]; then
+    # Ensure the plugins directory exists
+    mkdir -p /var/www/html/wp-content/plugins/redis-cache/includes/
+    
+    # Copy the object-cache.php file
     cp /var/www/html/wp-content/plugins/redis-cache/includes/object-cache.php /var/www/html/wp-content/object-cache.php
 fi
 

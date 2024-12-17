@@ -19,8 +19,9 @@ RUN apt-get update && apt-get install -y \
     php7.4-dev \
     gcc \
     make \
-    php7.4-redis && \
-    rm -rf /var/lib/apt/lists/*
+    php7.4-redis \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
