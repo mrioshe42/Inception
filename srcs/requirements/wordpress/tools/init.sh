@@ -6,12 +6,6 @@ while ! mysqladmin ping -h"mariadb" -u"${MYSQL_USER}" -p"$(cat /run/secrets/mysq
     sleep 2
 done
 
-# Wait for Redis to be ready
-while ! redis-cli -h redis ping &>/dev/null; do
-    echo "Waiting for Redis..."
-    sleep 1
-done
-
 sleep 10
 
 # Check if WordPress core files exist
@@ -33,41 +27,33 @@ if [ ! -f /var/www/html/wp-config.php ]; then
     # Add Redis configuration to wp-config.php
     wp config set WP_REDIS_HOST redis --allow-root --path=/var/www/html
     wp config set WP_REDIS_PORT 6379 --raw --allow-root --path=/var/www/html
-    wp config set WP_REDIS_CLIENT phpredis --allow-root --path=/var/www/html
-    wp config set WP_REDIS_DATABASE 0 --raw --allow-root --path=/var/www/html
-    wp config set WP_REDIS_PREFIX "${DOMAIN_NAME}" --allow-root --path=/var/www/html
     wp config set WP_CACHE true --raw --allow-root --path=/var/www/html
     
     # Install WordPress
     wp core install \
-        --url="https://${DOMAIN_NAME}" \
+        --url="https://mrios-he.42.fr" \
         --title="Inception" \
         --admin_user="${WP_ADMIN_USER}" \
         --admin_password="${WP_ADMIN_PASSWORD}" \
         --admin_email="${WP_ADMIN_EMAIL}" \
         --path=/var/www/html \
         --allow-root
-fi
-
-# Always ensure Redis plugin is installed and configured
-if ! wp plugin is-installed redis-cache --allow-root --path=/var/www/html; then
+    
+    # Install and activate Redis Cache plugin
     wp plugin install redis-cache --activate --allow-root --path=/var/www/html
+    
+    # Copy object-cache.php dropin
+    cp /var/www/html/wp-content/plugins/redis-cache/includes/object-cache.php /var/www/html/wp-content/object-cache.php
+    
+    # Set proper permissions
+    chown -R www-data:www-data /var/www/html
+    chmod -R 755 /var/www/html
+    
+    # Enable Redis Object Cache
+    wp redis enable --allow-root --path=/var/www/html
+    
+    echo "WordPress installation completed!"
 fi
-
-# Make sure Redis plugin is activated
-if ! wp plugin is-active redis-cache --allow-root --path=/var/www/html; then
-    wp plugin activate redis-cache --allow-root --path=/var/www/html
-fi
-
-# Update object-cache.php dropin
-cp /var/www/html/wp-content/plugins/redis-cache/includes/object-cache.php /var/www/html/wp-content/object-cache.php
-
-# Set proper permissions
-chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html
-
-# Enable Redis Object Cache
-wp redis enable --allow-root --path=/var/www/html
 
 # Verify Redis is working
 echo "Checking Redis status..."
