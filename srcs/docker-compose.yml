@@ -90,8 +90,10 @@ services:
     volumes:
       - ./requirements/bonus/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
     restart: always
+    privileged: true
     cap_add:
       - SYS_ADMIN
+      - IPC_LOCK
     deploy:
       resources:
         limits:

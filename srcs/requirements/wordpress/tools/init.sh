@@ -25,6 +25,10 @@ if ! wp core is-installed --path=/var/www/html --allow-root; then
         --allow-root
 
     echo "WordPress core installation completed!"
+else
+    # Update the admin password even if WordPress is already installed
+    echo "WordPress already installed, updating admin password..."
+    wp user update ${WP_ADMIN_USER} --user_pass="$(cat /run/secrets/credentials)" --allow-root
 fi
 
 # Always ensure Redis plugin is properly set up
