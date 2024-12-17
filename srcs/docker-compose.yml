@@ -140,6 +140,21 @@ services:
         limits:
           memory: 256M
           cpus: '0.3'
+  
+  hugo:
+    build:
+      context: requirements/bonus/hugo
+      dockerfile: Dockerfile
+    container_name: hugo
+    volumes:
+      - hugo_data:/var/www/hugo
+    networks:
+      - inception_network
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    restart: always
+    ports:
+      - "1313:1313"
 
 volumes:
   wordpress_data:
@@ -158,6 +173,12 @@ volumes:
     driver: local
   ssh_logs:
     driver: local
+  hugo_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mrios-he/data/hugo
+      o: bind
 
 secrets:
   mysql_password:
