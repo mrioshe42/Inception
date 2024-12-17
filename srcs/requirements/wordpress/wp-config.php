@@ -54,9 +54,13 @@ define('AUTOMATIC_UPDATER_DISABLED', false);
 define('WP_HTTP_BLOCK_EXTERNAL', false);
 define('DISALLOW_UNFILTERED_HTML', true);
 
-// Define WordPress Content Directory (optional but recommended)
+// Define WordPress URLs
+define('WP_HOME', 'https://' . getenv('DOMAIN_NAME'));
+define('WP_SITEURL', 'https://' . getenv('DOMAIN_NAME'));
+
+// Define WordPress Content Directory
 define('WP_CONTENT_DIR', __DIR__ . '/wp-content');
-define('WP_CONTENT_URL', 'https://' . $_SERVER['HTTP_HOST'] . '/wp-content');
+define('WP_CONTENT_URL', WP_HOME . '/wp-content');
 
 // Prevent direct file access
 if (!defined('ABSPATH')) {
