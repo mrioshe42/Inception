@@ -36,8 +36,10 @@ services:
       - .env
     secrets:
       - mysql_password
+      - credentials
     environment:
       - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/mysql_password
+      - WP_ADMIN_PASSWORD_FILE=/run/secrets/credentials
     networks:
       - inception_network
     restart: always
@@ -160,6 +162,8 @@ secrets:
     file: ../secrets/db_root_password.txt
   ftp_password:
     file: ../secrets/ftp_password.txt
+  credentials:
+    file: ../secrets/credentials.txt
 
 networks:
   inception_network:
