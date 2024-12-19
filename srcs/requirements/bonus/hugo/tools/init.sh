@@ -8,7 +8,7 @@ if [ ! -d "/var/www/hugo/site" ]; then
 
     # Use a simpler theme (paper)
     git init
-    git submodule add https://github.com/nanxiaobei/hugo-paper themes/paper
+    git submodule add https://github.com/theNewDynamic/gohugo-theme-ananke.git themes/ananke
     echo 'theme = "paper"' > config.toml
     
     # Add basic configuration
