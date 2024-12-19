@@ -15,13 +15,36 @@ if [ ! -d "/var/www/hugo/site" ]; then
     git submodule init
     git submodule update
 
-    # Create necessary directories
+    # Create necessary directories with proper structure
     mkdir -p static/images
-    mkdir -p content/posts
+    mkdir -p content/{containers,security,posts}
+    mkdir -p content/containers/{nginx,wordpress,mariadb}
+    mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
 
-    # Copy logo and other images
-    cp /tmp/42logo.png static/images/
-    cp /tmp/docker-diagram.png static/images/
+    # Remove the _index.md from directory creation as it should be a file, not a directory
+    rm -rf content/containers/_index.md
+    rm -rf content/security/_index.md
+    rm -rf content/posts/_index.md
+
+    # Create necessary index files for each section
+    touch content/_index.md
+    touch content/containers/_index.md
+    touch content/security/_index.md
+    touch content/posts/_index.md
+
+    # Ensure proper permissions
+    chmod -R 755 content/
+
+    # Create the directory structure for the theme
+    mkdir -p themes/paper/layouts/_default
+    mkdir -p themes/paper/layouts/partials
+
+    # Debug: List the structure
+    echo "Content structure:"
+    ls -R content/
+
+    # Force Hugo to rebuild the site
+    hugo --cleanDestinationDir --verbose
 
     # Create hugo.toml with updated structure
     cat > hugo.toml <<EOL
