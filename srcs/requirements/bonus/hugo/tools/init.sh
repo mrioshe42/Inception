@@ -1,17 +1,26 @@
 #!/bin/bash
 
-# Check if Hugo site exists, if not create it
+# Create new Hugo site if it doesn't exist
 if [ ! -d "/var/www/hugo/site" ]; then
     echo "Creating new Hugo site..."
     hugo new site site
-    cd site
+    cd site || exit
 
-    # Install the Paper theme correctly
-    mkdir -p themes/paper
-    git clone https://github.com/nanxiaobei/hugo-paper.git themes/paper
+    # Initialize git repository
+    git init
+    git config --global --add safe.directory /var/www/hugo/site
 
-    # Create config.toml with logo configuration
-    cat > config.toml <<EOL
+    # Install the Paper theme as a submodule
+    git submodule add https://github.com/nanxiaobei/hugo-paper.git themes/paper
+    git submodule init
+    git submodule update
+
+    # Ensure static directory exists and copy logo
+    mkdir -p static/images
+    cp /tmp/42logo.png static/images/
+
+    # Create hugo.toml (main configuration file)
+    cat > hugo.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'My Static Site'
@@ -23,7 +32,7 @@ theme = 'paper'
   darkMode = true
   
   # Logo configuration
-  avatar = '/images/42logo.png'
+  avatar = 'site/static/images/42logo.png'
   
   # header social icons
   twitter = ''       
@@ -38,13 +47,20 @@ theme = 'paper'
   # Theme display
   monoDarkIcon = true
   styleDark = true
+
+[menu]
+  [[menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 10
 EOL
 
-    # Create the content directory structure
-    mkdir -p content/posts
-    mkdir -p static/images
+    # Remove default config.toml if it exists
+    rm -f config.toml
 
-    # Create a sample post
+    # Create example content
+    mkdir -p content/posts
     cat > content/posts/welcome.md <<EOL
 ---
 title: "Welcome to My Static Site"
@@ -62,16 +78,31 @@ This site was created using Hugo as part of the 42 school Inception project.
 - Simple deployment
 EOL
 
-    # Initialize git only after creating all files
-    git init
+    # Create an about page
+    mkdir -p content/about
+    cat > content/about/index.md <<EOL
+---
+title: "About"
+date: $(date +%Y-%m-%d)
+draft: false
+---
+
+## About My Site
+
+This is a static website created using Hugo for the 42 school Inception project.
+EOL
+
+    # Commit changes
     git add .
-    git commit -m "Initial commit"
+    git commit -m "Initial commit with theme as submodule"
+else
+    cd site || exit
 fi
 
-# Start Hugo server
-cd /var/www/hugo/site
-exec hugo server \
+# Start Hugo server with verbose output
+hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
-    --baseURL=https://hugo.${DOMAIN_NAME} \
-    --appendPort=false
+    --baseURL="https://hugo.${DOMAIN_NAME}" \
+    --appendPort=false \
+    --verbose

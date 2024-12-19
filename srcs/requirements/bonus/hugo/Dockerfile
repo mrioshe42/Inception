@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure git
 RUN git config --global init.defaultBranch main && \
     git config --global user.email "hugo@42.fr" && \
     git config --global user.name "Hugo Site"
@@ -15,14 +16,14 @@ RUN curl -L https://github.com/gohugoio/hugo/releases/download/v0.121.1/hugo_0.1
 
 WORKDIR /var/www/hugo
 
-# Create the site directory first
-RUN mkdir -p /var/www/hugo/site/static/images
-
-# Copy static content directly to the correct location
-COPY tools/static/images/42logo.png /var/www/hugo/site/static/images/
+# Remove any existing site directory to ensure clean state
+RUN rm -rf site
 
 COPY tools/init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
+
+# Copy static content
+COPY tools/static/images/42logo.png /tmp/42logo.png
 
 EXPOSE 1313
 
