@@ -6,29 +6,42 @@ if [ ! -d "/var/www/hugo/site" ]; then
     hugo new site site
     cd site
 
-    # Use a simpler theme (paper)
+    # Install the Paper theme correctly
     git init
-    git submodule add https://github.com/theNewDynamic/gohugo-theme-ananke.git themes/ananke
-    echo 'theme = "ananke"' > config.toml
+    # Clone the paper theme directly into themes directory
+    git clone https://github.com/nanxiaobei/hugo-paper themes/paper
 
-cat >> config.toml <<EOL
+    # Create hugo.toml with correct theme configuration
+    cat > hugo.toml <<EOL
 baseURL = 'https://${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'My Static Site'
+theme = 'paper'
 
 [params]
-  background_color_class = "bg-dark-gray"
-  featured_image = "/images/gohugo-default-sample-hero-image.jpg"
-  recent_posts_number = 2
+  # color style
+  color = 'gray'                           # linen, wheat, gray, light
+
+  # header social icons
+  twitter = ''       
+  github = 'mrioshe42'        
+  instagram = ''     
+  rss = true          
+
+  # home page profile
+  avatar = ''                 
+  name = 'Static Site'
+  bio = 'Welcome to my static website built with Hugo!'
+
+  # misc
+  disableHLJS = true                      # disable highlight.js
+  monoDarkIcon = true                     # show monochrome dark mode icon
 EOL
 
     # Create the content directory structure
     mkdir -p content/posts
 
     # Create a sample post
-    hugo new posts/welcome.md
-    
-    # Edit the welcome post
     cat > content/posts/welcome.md <<EOL
 ---
 title: "Welcome to My Static Site"
@@ -47,10 +60,12 @@ This site was created using Hugo as part of the 42 school Inception project.
 EOL
 fi
 
-# Start Hugo server
+# Start Hugo server with proper configuration
 cd /var/www/hugo/site
 exec hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
     --baseURL=https://${DOMAIN_NAME} \
-    --appendPort=false
+    --appendPort=false \
+    --themesDir themes \
+    --theme paper
