@@ -23,7 +23,7 @@ COPY tools/init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
 
 # Copy static content
-COPY tools/static/images/42logo.png /tmp/42logo.png
+COPY tools/static/images/* /tmp/
 
 EXPOSE 1313
 
