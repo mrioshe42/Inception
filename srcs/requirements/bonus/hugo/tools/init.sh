@@ -2,7 +2,6 @@
 
 # Check if Hugo site exists, if not create it
 if [ ! -d "/var/www/hugo/site" ]; then
-    echo "Creating new Hugo site..."
     hugo new site site
     cd site
 
@@ -14,7 +13,7 @@ if [ ! -d "/var/www/hugo/site" ]; then
     cat > hugo.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
 languageCode = 'en-us'
-title = 'My Static Site'
+title = 'Inception'
 theme = 'paper'
 
 # Dark mode and theme configuration
@@ -33,7 +32,7 @@ theme = 'paper'
 
   # home page profile
   name = 'Static Site'
-  bio = 'Welcome to my static website built with Hugo!'
+  bio = 'Welcome !'
 
   # Other settings
   monoDarkIcon = true
@@ -47,7 +46,7 @@ EOL
     # Create a sample post
     cat > content/posts/welcome.md <<EOL
 ---
-title: "Welcome to My Static Site"
+title: "Welcome !"
 date: 2024-12-19
 draft: false
 ---
@@ -68,7 +67,7 @@ cd /var/www/hugo/site
 exec hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
-    --baseURL=https://${DOMAIN_NAME} \
+    --baseURL=https://hugo.${DOMAIN_NAME} \
     --appendPort=false \
     --themesDir themes \
     --theme paper
