@@ -9,28 +9,17 @@ if [ ! -d "/var/www/hugo/site" ]; then
     # Use a simpler theme (paper)
     git init
     git submodule add https://github.com/theNewDynamic/gohugo-theme-ananke.git themes/ananke
-    echo 'theme = "paper"' > config.toml
-    
-    # Add basic configuration
-    cat >> config.toml <<EOL
+    echo 'theme = "ananke"' > config.toml
+
+cat >> config.toml <<EOL
 baseURL = 'https://${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'My Static Site'
 
 [params]
-  # color style
-  color = 'linen'                           # linen, wheat, gray, light
-
-  # header social icons
-  twitter = ''       # twitter.com/YOUR_TWITTER_ID
-  github = ''        # github.com/YOUR_GITHUB_ID
-  instagram = ''     # instagram.com/YOUR_INSTAGRAM_ID
-  rss = ''          # true or false
-
-  # home page profile
-  avatar = ''                 # gravatar email or image url
-  name = 'Static Site'
-  bio = 'Welcome to my static website built with Hugo!'
+  background_color_class = "bg-dark-gray"
+  featured_image = "/images/gohugo-default-sample-hero-image.jpg"
+  recent_posts_number = 2
 EOL
 
     # Create the content directory structure
