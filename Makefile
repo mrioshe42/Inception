@@ -11,8 +11,10 @@ prepare:
 	@sudo chmod 777 /home/mrios-he/data/mariadb
 	@sudo chown -R mrios-he:mrios-he /home/mrios-he/data/wordpress
 	@sudo chown -R mrios-he:mrios-he /home/mrios-he/data/mariadb
+	@sudo chown -R mrios-he:mrios-he /home/mrios-he/data/hugo
 	@sudo sed -i '/mrios-he.42.fr/d' /etc/hosts
 	@sudo echo "127.0.0.1 mrios-he.42.fr" >> /etc/hosts
+	@sudo echo "127.0.0.1 hugo.mrios-he.42.fr" >> /etc/hosts
 
 $(NAME):
 	@docker-compose -f srcs/docker-compose.yml up --build -d
