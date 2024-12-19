@@ -20,6 +20,7 @@ if [ ! -d "/var/www/hugo/site" ]; then
     mkdir -p content/{containers,security,posts}
     mkdir -p content/containers/{nginx,wordpress,mariadb}
     mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
+    mkdir -p content/posts/troubleshooting
 
     # Remove the _index.md from directory creation as it should be a file, not a directory
     rm -rf content/containers/_index.md
@@ -53,6 +54,29 @@ languageCode = 'en-us'
 title = 'Inception'
 theme = 'paper'
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[permalinks]
+  posts = "/:year/:month/:title/"
+  
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+  
+[params.home]
+  # Number of posts to show on home page
+  numberOfPosts = 5
+  
+  # Show full content instead of summary
+  fullContent = true
+
 [params]
   color = 'gray'
   darkMode = true
@@ -84,106 +108,101 @@ theme = 'paper'
     weight = 40
 EOL
 
-    # Create main page with comprehensive overview
-    cat > content/_index.md <<EOL
+cat > themes/paper/layouts/_default/baseof.html <<EOL
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode }}">
+<head>
+    {{ partial "head.html" . }}
+</head>
+<body>
+    {{ partial "header.html" . }}
+    <main class="main">
+        {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "footer.html" . }}
+</body>
+</html>
+EOL
+
+# Update the main page content
+cat > content/_index.md <<EOL
 ---
 title: "Inception Project Documentation"
 date: $(date +%Y-%m-%d)
 draft: false
+type: "page"
+layout: "single"
 ---
 
 # Welcome to Inception Project
+
+{{< figure src="/images/docker-diagram.png" alt="Docker Infrastructure" title="Project Infrastructure Overview" >}}
 
 ## Project Overview
 
 The Inception project is a comprehensive system administration exercise that focuses on Docker containerization and service orchestration. This project implements a complete web infrastructure using Docker containers.
 
-![Docker Infrastructure](/images/docker-diagram.png)
-
 ### Core Infrastructure Components
 
+{{% notice info %}}
 1. **NGINX Server (Front-end)**
    - SSL/TLS encryption
    - Reverse proxy configuration
    - Static file serving
+{{% /notice %}}
 
+{{% notice info %}}
 2. **WordPress + PHP-FPM (Application)**
    - Dynamic content management
    - PHP processing
    - Custom configurations
+{{% /notice %}}
 
+{{% notice info %}}
 3. **MariaDB (Database)**
    - Data persistence
    - Secure database operations
    - Backup management
+{{% /notice %}}
 
-### Bonus Services
+## Quick Navigation
 
-1. **Redis Cache**
-   - Session management
-   - Performance optimization
+- [Container Setup Guides](/containers/)
+- [Security Implementation](/security/)
+- [Troubleshooting Guide](/posts/troubleshooting/)
 
-2. **FTP Server**
-   - File management
-   - Secure file transfers
+## Getting Started
 
-3. **Static Website (Hugo)**
-   - Project documentation
-   - Fast and secure static site
+1. **Clone Repository**
+\`\`\`bash
+git clone https://github.com/mrioshe42/Inception.git
+cd Inception
+\`\`\`
 
-4. **Adminer**
-   - Database management interface
-   - Secure access
+2. **Environment Setup**
+\`\`\`bash
+cp .env.example .env
+# Edit .env with your configuration
+\`\`\`
 
-## Project Requirements
+3. **Build and Deploy**
+\`\`\`bash
+make all
+\`\`\`
 
-### System Requirements
+## System Requirements
+
 - Docker Engine
 - Docker Compose
 - Make utility
 - Minimum 4GB RAM
 - 10GB free disk space
 
-### Network Requirements
+## Network Requirements
+
 - Port 443 (HTTPS)
 - Port 21 (FTP)
 - Port 22 (SSH)
-
-## Quick Start Guide
-
-1. **Clone Repository**
-   \`\`\`bash
-   git clone https://github.com/mrioshe42/Inception.git
-   cd Inception
-   \`\`\`
-
-2. **Environment Setup**
-   \`\`\`bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   \`\`\`
-
-3. **Build and Deploy**
-   \`\`\`bash
-   make all
-   \`\`\`
-
-## Project Structure
-
-\`\`\`
-inception/
-├── srcs/
-│   ├── docker-compose.yml
-│   ├── requirements/
-│   │   ├── nginx/
-│   │   ├── wordpress/
-│   │   ├── mariadb/
-│   │   └── bonus/
-│   └── .env
-└── Makefile
-\`\`\`
-
-Visit the Container Setup section for detailed installation guides for each service.
 EOL
 
     # Create container setup pages
@@ -498,6 +517,191 @@ fail2ban-client set wordpress banip X.X.X.X
 - Security Best Practices
 EOL
 
+cat > content/security/ssl.md <<EOL
+---
+title: "SSL/TLS Security"
+date: $(date +%Y-%m-%d)
+draft: false
+---
+
+# SSL/TLS Security Configuration
+
+## Overview
+Our Inception project implements robust SSL/TLS security measures to ensure encrypted communication between clients and services.
+
+## SSL/TLS Implementation
+
+### 1. Certificate Configuration
+\`\`\`bash
+# Generate SSL certificate
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/inception.key \
+    -out /etc/nginx/ssl/inception.crt \
+    -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=42Paris/CN=${DOMAIN_NAME}"
+\`\`\`
+
+### 2. NGINX SSL Configuration
+\`\`\`nginx
+# SSL configuration
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers off;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+
+# SSL certificate paths
+ssl_certificate /etc/nginx/ssl/inception.crt;
+ssl_certificate_key /etc/nginx/ssl/inception.key;
+
+# Additional security headers
+add_header Strict-Transport-Security "max-age=31536000" always;
+add_header X-Frame-Options SAMEORIGIN;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+\`\`\`
+
+## Security Measures
+
+### 1. Protocol Settings
+- TLS 1.2 and 1.3 only
+- Older SSL versions disabled
+- Modern cipher suite configuration
+
+### 2. Certificate Management
+- Self-signed certificates
+- 2048-bit RSA keys
+- 1-year validity period
+- Automatic renewal process
+
+### 3. Security Headers
+- HSTS implementation
+- XSS protection
+- Clickjacking prevention
+- MIME type sniffing protection
+
+## Implementation Steps
+
+1. **Generate Certificates**
+   - Create SSL directory
+   - Generate self-signed certificate
+   - Set proper permissions
+
+2. **Configure NGINX**
+   - Enable SSL module
+   - Configure SSL parameters
+   - Add security headers
+
+3. **Testing and Verification**
+   - SSL Labs test
+   - Certificate validation
+   - Security header checks
+
+## Best Practices
+
+### 1. Certificate Management
+- Regular certificate rotation
+- Secure key storage
+- Backup procedures
+- Monitoring expiration dates
+
+### 2. Security Configuration
+- Regular security audits
+- Cipher suite updates
+- Security header maintenance
+- SSL/TLS version management
+
+### 3. Monitoring
+- Certificate expiration alerts
+- SSL/TLS handshake errors
+- Security header effectiveness
+- Client compatibility issues
+EOL
+cat > content/posts/troubleshooting/_index.md <<EOL
+---
+title: "Troubleshooting Guide"
+date: $(date +%Y-%m-%d)
+draft: false
+---
+
+# Troubleshooting Guide
+
+## Common Issues and Solutions
+
+### Container Issues
+
+1. **Container Won't Start**
+   - Check logs: \`docker logs <container_name>\`
+   - Verify ports: \`docker port <container_name>\`
+   - Check volume permissions
+
+2. **Database Connection Issues**
+   - Verify environment variables
+   - Check network connectivity
+   - Confirm MariaDB service is running
+
+### WordPress Issues
+
+1. **White Screen of Death**
+   - Enable WP_DEBUG in wp-config.php
+   - Check PHP error logs
+   - Disable plugins temporarily
+
+2. **Cannot Upload Media**
+   - Check directory permissions
+   - Verify PHP upload limits
+   - Check available disk space
+
+### NGINX Issues
+
+1. **SSL Certificate Problems**
+   - Verify certificate paths
+   - Check certificate validity
+   - Confirm proper permissions
+
+2. **502 Bad Gateway**
+   - Check PHP-FPM status
+   - Verify fastcgi_pass configuration
+   - Check error logs
+
+### Security Issues
+
+1. **Fail2Ban Not Working**
+   - Check service status
+   - Verify log paths
+   - Review jail configurations
+
+2. **SSL/TLS Warnings**
+   - Update cipher configurations
+   - Check protocol settings
+   - Verify certificate chain
+
+## Debug Commands
+
+\`\`\`bash
+# Check container status
+docker ps -a
+
+# View container logs
+docker logs <container_name>
+
+# Check NGINX configuration
+nginx -t
+
+# Test PHP-FPM
+cgi-fcgi -bind -connect 127.0.0.1:9000
+
+# View MariaDB logs
+tail -f /var/log/mysql/error.log
+
+# Check Fail2Ban status
+fail2ban-client status
+\`\`\`
+
+## Support Resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [WordPress Debugging](https://wordpress.org/support/article/debugging-in-wordpress/)
+- [NGINX Docs](https://nginx.org/en/docs/)
+- [MariaDB Knowledge Base](https://mariadb.com/kb/en/)
+EOL
     # Commit changes
     git add .
     git commit -m "Updated documentation structure with security focus"
@@ -510,4 +714,7 @@ hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
     --baseURL="https://hugo.${DOMAIN_NAME}" \
-    --appendPort=false
+    --appendPort=false \
+    --disableFastRender \
+    --ignoreCache \
+    --verbose
