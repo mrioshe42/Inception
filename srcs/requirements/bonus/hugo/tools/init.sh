@@ -16,7 +16,6 @@ if [ ! -d "/var/www/hugo/site" ]; then
 baseURL = 'https://${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'My Static Site'
-theme = 'paper'
 
 [params]
   # color style
@@ -33,6 +32,9 @@ theme = 'paper'
   name = 'Static Site'
   bio = 'Welcome to my static website built with Hugo!'
 EOL
+
+    # Create the content directory structure
+    mkdir -p content/posts
 
     # Create a sample post
     hugo new posts/welcome.md
