@@ -8,20 +8,23 @@ if [ ! -d "/var/www/hugo/site" ]; then
 
     # Install the Paper theme correctly
     git init
-    # Clone the paper theme directly into themes directory
     git clone https://github.com/nanxiaobei/hugo-paper themes/paper
 
-    # Create hugo.toml with correct theme configuration
+    # Create hugo.toml with dark theme configuration
     cat > hugo.toml <<EOL
-baseURL = 'https://${DOMAIN_NAME}'
+baseURL = 'https://hugo.${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'My Static Site'
 theme = 'paper'
 
+# Dark mode and theme configuration
 [params]
-  # color style
-  color = 'gray'                           # linen, wheat, gray, light
-
+  # Theme color: linen, wheat, gray, light
+  color = 'gray'
+  
+  # Dark mode
+  defaultTheme = "dark"
+  
   # header social icons
   twitter = ''       
   github = 'mrioshe42'        
@@ -29,13 +32,13 @@ theme = 'paper'
   rss = true          
 
   # home page profile
-  avatar = ''                 
   name = 'Static Site'
   bio = 'Welcome to my static website built with Hugo!'
 
-  # misc
-  disableHLJS = true                      # disable highlight.js
-  monoDarkIcon = true                     # show monochrome dark mode icon
+  # Other settings
+  monoDarkIcon = true
+  fullWidthTheme = true
+  centerTheme = true
 EOL
 
     # Create the content directory structure
@@ -45,7 +48,7 @@ EOL
     cat > content/posts/welcome.md <<EOL
 ---
 title: "Welcome to My Static Site"
-date: $(date +%Y-%m-%d)
+date: 2024-12-19
 draft: false
 ---
 
@@ -60,7 +63,7 @@ This site was created using Hugo as part of the 42 school Inception project.
 EOL
 fi
 
-# Start Hugo server with proper configuration
+# Start Hugo server
 cd /var/www/hugo/site
 exec hugo server \
     --bind=0.0.0.0 \
