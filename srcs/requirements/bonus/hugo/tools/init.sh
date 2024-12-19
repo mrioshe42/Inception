@@ -9,6 +9,9 @@ if [ ! -d "/var/www/hugo/site" ]; then
     git init
     git clone https://github.com/nanxiaobei/hugo-paper themes/paper
 
+    mkdir -p static/images
+    cp /42/git_inception/srcs/requirements/bonus/hugo/tools/static/images/42logo.png site/static/images/
+
     # Create hugo.toml with dark theme configuration
     cat > hugo.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
@@ -16,14 +19,16 @@ languageCode = 'en-us'
 title = 'Inception'
 theme = 'paper'
 
-# Dark mode and theme configuration
 [params]
-  # Theme color: linen, wheat, gray, light
+  # Theme
   color = 'gray'
   
   # Dark mode
   defaultTheme = "dark"
   
+  # Logo configuration
+  avatar = 'site/static/images/42logo.png'
+
   # header social icons
   twitter = ''       
   github = 'mrioshe42'        

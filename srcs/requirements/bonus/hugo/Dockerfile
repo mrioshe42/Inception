@@ -13,6 +13,7 @@ WORKDIR /var/www/hugo
 
 COPY tools/init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
+COPY tools/static/images/42logo.png /var/www/hugo/static/images/
 
 EXPOSE 1313
 
