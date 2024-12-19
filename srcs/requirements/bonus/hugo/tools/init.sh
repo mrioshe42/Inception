@@ -2,33 +2,29 @@
 
 # Check if Hugo site exists, if not create it
 if [ ! -d "/var/www/hugo/site" ]; then
+    echo "Creating new Hugo site..."
     hugo new site site
     cd site
 
     # Install the Paper theme correctly
-    git init
-    git clone https://github.com/nanxiaobei/hugo-paper themes/paper
+    mkdir -p themes/paper
+    git clone https://github.com/nanxiaobei/hugo-paper.git themes/paper
 
-    mkdir -p static/images
-    cp /42/git_inception/srcs/requirements/bonus/hugo/tools/static/images/42logo.png site/static/images/
-
-    # Create hugo.toml with dark theme configuration
-    cat > hugo.toml <<EOL
+    # Create config.toml with logo configuration
+    cat > config.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
 languageCode = 'en-us'
-title = 'Inception'
+title = 'My Static Site'
 theme = 'paper'
 
 [params]
   # Theme
   color = 'gray'
-  
-  # Dark mode
-  defaultTheme = "dark"
+  darkMode = true
   
   # Logo configuration
-  avatar = 'site/static/images/42logo.png'
-
+  avatar = '/images/42logo.png'
+  
   # header social icons
   twitter = ''       
   github = 'mrioshe42'        
@@ -37,22 +33,22 @@ theme = 'paper'
 
   # home page profile
   name = 'Static Site'
-  bio = 'Welcome !'
+  bio = 'Welcome to my static website built with Hugo!'
 
-  # Other settings
+  # Theme display
   monoDarkIcon = true
-  fullWidthTheme = true
-  centerTheme = true
+  styleDark = true
 EOL
 
     # Create the content directory structure
     mkdir -p content/posts
+    mkdir -p static/images
 
     # Create a sample post
     cat > content/posts/welcome.md <<EOL
 ---
-title: "Welcome !"
-date: 2024-12-19
+title: "Welcome to My Static Site"
+date: $(date +%Y-%m-%d)
 draft: false
 ---
 
@@ -65,6 +61,11 @@ This site was created using Hugo as part of the 42 school Inception project.
 - Static content
 - Simple deployment
 EOL
+
+    # Initialize git only after creating all files
+    git init
+    git add .
+    git commit -m "Initial commit"
 fi
 
 # Start Hugo server
@@ -73,6 +74,4 @@ exec hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
     --baseURL=https://hugo.${DOMAIN_NAME} \
-    --appendPort=false \
-    --themesDir themes \
-    --theme paper
+    --appendPort=false

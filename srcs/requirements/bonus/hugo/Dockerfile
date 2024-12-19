@@ -5,15 +5,24 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+RUN git config --global init.defaultBranch main && \
+    git config --global user.email "hugo@42.fr" && \
+    git config --global user.name "Hugo Site"
+
 RUN curl -L https://github.com/gohugoio/hugo/releases/download/v0.121.1/hugo_0.121.1_linux-amd64.deb -o hugo.deb \
     && dpkg -i hugo.deb \
     && rm hugo.deb
 
 WORKDIR /var/www/hugo
 
+# Create the site directory first
+RUN mkdir -p /var/www/hugo/site/static/images
+
+# Copy static content directly to the correct location
+COPY tools/static/images/42logo.png /var/www/hugo/site/static/images/
+
 COPY tools/init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
-COPY tools/static/images/42logo.png /var/www/hugo/static/images/
 
 EXPOSE 1313
 
