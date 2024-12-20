@@ -2,53 +2,46 @@
 
 # Create new Hugo site if it doesn't exist
 if [ ! -d "/var/www/hugo/site" ]; then
-    echo "Creating new Hugo site..."
     hugo new site site
     cd site || exit
 
-    # Initialize git repository
     git init
     git config --global --add safe.directory /var/www/hugo/site
 
-    # Install the Paper theme as a submodule
     git submodule add https://github.com/nanxiaobei/hugo-paper.git themes/paper
     git submodule init
     git submodule update --init --recursive
     git submodule update --remote --merge
 
-    # Verify theme installation
     if [ ! -d "themes/paper" ]; then
         echo "Error: Theme installation failed"
         exit 1
     fi
 
-    # Create necessary directories with proper structure
     mkdir -p static/images
     mkdir -p content/{containers,security,posts}
     mkdir -p content/containers/{nginx,wordpress,mariadb}
     mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
     mkdir -p content/posts/troubleshooting
 
-    # Remove any existing index files
     rm -rf content/containers/_index.md
     rm -rf content/security/_index.md
     rm -rf content/posts/_index.md
 
-    # Create necessary index files for each section
     touch content/_index.md
     touch content/containers/_index.md
     touch content/security/_index.md
     touch content/posts/_index.md
-
-    # Ensure proper permissions
+    touch content/containers/redis.md
+   touch content/containers/ftp.md
+   touch content/containers/adminer.md
+   touch content/security/docker.md
+   touch content/security/wordpress.md
+    
     chmod -R 755 content/
-
-    # Debug: List the structure
-    echo "Content structure:"
     ls -R content/
 
-    # Create hugo.toml with updated structure
-    cat > hugo.toml <<EOL
+cat > hugo.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
 languageCode = 'en-us'
 title = 'Inception'
@@ -74,30 +67,54 @@ theme = 'paper'
     identifier = "containers"
     name = "Container Setup"
     url = "/containers/"
-    weight = 20
-    
+    weight = 10
+  
   [[menu.main]]
     identifier = "security"
-    name = "Security Measures"
+    name = "Security"
     url = "/security/"
-    weight = 30
-    
+    weight = 20
+  
   [[menu.main]]
     identifier = "troubleshooting"
     name = "Troubleshooting"
     url = "/posts/troubleshooting/"
-    weight = 40
-# Markdown processing
-[markup]
-  [markup.highlight]
-    codeFences = true
-    guessSyntax = true
-    lineNos = false
-    noClasses = false
-    tabWidth = 4
+    weight = 30
+
+  # Add submenus for containers
+  [[menu.containers]]
+    name = "NGINX"
+    url = "/containers/nginx/"
+    weight = 1
+  [[menu.containers]]
+    name = "WordPress"
+    url = "/containers/wordpress/"
+    weight = 2
+  [[menu.containers]]
+    name = "MariaDB"
+    url = "/containers/mariadb/"
+    weight = 3
+
+  # Add submenus for security
+  [[menu.security]]
+    name = "Fail2Ban"
+    url = "/security/fail2ban/"
+    weight = 1
+  [[menu.security]]
+    name = "SSL/TLS"
+    url = "/security/ssl/"
+    weight = 2
+  [[menu.security]]
+    name = "Docker Security"
+    url = "/security/docker/"
+    weight = 3
+  [[menu.security]]
+    name = "WordPress Security"
+    url = "/security/wordpress/"
+    weight = 4
 EOL
 
-# Update the main page content
+
 cat > content/_index.md <<EOL
 ---
 title: "Inception Project Documentation"
@@ -134,8 +151,23 @@ The Inception project is a comprehensive system administration exercise that foc
 
 ## Quick Navigation
 
-- [Container Setup Guides](/containers/)
-- [Security Implementation](/security/)
+### Core Services
+- [NGINX Setup](/containers/nginx/)
+- [WordPress Setup](/containers/wordpress/)
+- [MariaDB Setup](/containers/mariadb/)
+
+### Additional Services
+- [Redis Cache](/containers/redis/)
+- [FTP Server](/containers/ftp/)
+- [Adminer](/containers/adminer/)
+
+### Security
+- [Fail2Ban Configuration](/security/fail2ban/)
+- [SSL/TLS Security](/security/ssl/)
+- [Docker Security](/security/docker/)
+- [WordPress Security](/security/wordpress/)
+
+### Support
 - [Troubleshooting Guide](/posts/troubleshooting/)
 
 ## Getting Started
@@ -172,27 +204,32 @@ make all
 - Port 22 (SSH)
 EOL
 
-    # Create container setup pages
-    cat > content/containers/_index.md <<EOL
+
+cat > content/containers/_index.md <<EOL
 ---
 title: "Container Setup Guides"
 date: $(date +%Y-%m-%d)
 draft: false
 ---
 
-# Container Installation Guides
+# Container Setup Guides
 
-Select a container to view its detailed setup instructions:
+## Available Guides
 
-- [NGINX Configuration](/containers/nginx)
-- [WordPress & PHP-FPM Setup](/containers/wordpress)
-- [MariaDB Database](/containers/mariadb)
-- [Redis Cache](/containers/redis)
-- [FTP Server](/containers/ftp)
-- [Adminer](/containers/adminer)
+### Core Services
+- [NGINX Configuration](/containers/nginx/)
+- [WordPress & PHP-FPM Setup](/containers/wordpress/)
+- [MariaDB Database](/containers/mariadb/)
+
+### Additional Services
+- [Redis Cache](/containers/redis/)
+- [FTP Server](/containers/ftp/)
+- [Adminer](/containers/adminer/)
+
+[Back to Home](/)
 EOL
 
-    cat > content/containers/nginx.md <<EOL
+cat > content/containers/nginx.md <<EOL
 ---
 title: "NGINX Setup Guide"
 date: $(date +%Y-%m-%d)
@@ -244,9 +281,15 @@ draft: false
    - SSL verification
    - Connection testing
    - Log monitoring
+## Navigation
+
+- [Back to Container Guides](/containers/)
+- [Back to Home](/)
+- [Security Configuration](/security/)
+- [Troubleshooting Guide](/posts/troubleshooting/)
 EOL
 
-    cat > content/containers/wordpress.md <<EOL
+cat > content/containers/wordpress.md <<EOL
 ---
 title: "WordPress & PHP-FPM Setup"
 date: $(date +%Y-%m-%d)
@@ -280,9 +323,16 @@ draft: false
    - Essential plugins
    - Security plugins
    - Cache plugins
+
+## Navigation
+
+- [Back to Container Guides](/containers/)
+- [Back to Home](/)
+- [Security Configuration](/security/)
+- [Troubleshooting Guide](/posts/troubleshooting/)
 EOL
 
-    cat > content/containers/mariadb.md <<EOL
+cat > content/containers/mariadb.md <<EOL
 ---
 title: "MariaDB Setup"
 date: $(date +%Y-%m-%d)
@@ -313,10 +363,16 @@ draft: false
    - Automated backups
    - Backup verification
    - Restore procedures
+## Navigation
+
+- [Back to Container Guides](/containers/)
+- [Back to Home](/)
+- [Security Configuration](/security/)
+- [Troubleshooting Guide](/posts/troubleshooting/)
 EOL
 
-    # Create security measures pages
-    cat > content/security/_index.md <<EOL
+
+cat > content/security/_index.md <<EOL
 ---
 title: "Security Measures"
 date: $(date +%Y-%m-%d)
@@ -581,6 +637,7 @@ add_header X-XSS-Protection "1; mode=block";
 - Security header effectiveness
 - Client compatibility issues
 EOL
+
 cat > content/posts/troubleshooting/_index.md <<EOL
 ---
 title: "Troubleshooting Guide"
@@ -669,20 +726,14 @@ fail2ban-client status
 - [NGINX Docs](https://nginx.org/en/docs/)
 - [MariaDB Knowledge Base](https://mariadb.com/kb/en/)
 EOL
-   # Force Hugo to rebuild the site
     hugo --cleanDestinationDir --verbose
 
-    # Rest of your content creation remains the same...
-    # (Keep all your existing content creation sections)
-
-    # Commit changes
     git add .
     git commit -m "Updated documentation structure with security focus"
 else
     cd site || exit
 fi
 
-# Start Hugo server
 hugo server \
     --bind=0.0.0.0 \
     --port=1313 \
