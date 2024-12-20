@@ -144,26 +144,20 @@ The Inception project is a comprehensive system administration exercise that foc
 
 ### Core Infrastructure Components
 
-{{% notice info %}}
-1. **NGINX Server (Front-end)**
-   - SSL/TLS encryption
-   - Reverse proxy configuration
-   - Static file serving
-{{% /notice %}}
+#### 1. NGINX Server (Front-end)
+- SSL/TLS encryption
+- Reverse proxy configuration
+- Static file serving
 
-{{% notice info %}}
-2. **WordPress + PHP-FPM (Application)**
-   - Dynamic content management
-   - PHP processing
-   - Custom configurations
-{{% /notice %}}
+#### 2. WordPress + PHP-FPM (Application)
+- Dynamic content management
+- PHP processing
+- Custom configurations
 
-{{% notice info %}}
-3. **MariaDB (Database)**
-   - Data persistence
-   - Secure database operations
-   - Backup management
-{{% /notice %}}
+#### 3. MariaDB (Database)
+- Data persistence
+- Secure database operations
+- Backup management
 
 ## Quick Navigation
 
