@@ -13,7 +13,14 @@ if [ ! -d "/var/www/hugo/site" ]; then
     # Install the Paper theme as a submodule
     git submodule add https://github.com/nanxiaobei/hugo-paper.git themes/paper
     git submodule init
-    git submodule update
+    git submodule update --init --recursive
+    git submodule update --remote --merge
+
+    # Verify theme installation
+    if [ ! -d "themes/paper" ]; then
+        echo "Error: Theme installation failed"
+        exit 1
+    fi
 
     # Create necessary directories with proper structure
     mkdir -p static/images
@@ -22,7 +29,7 @@ if [ ! -d "/var/www/hugo/site" ]; then
     mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
     mkdir -p content/posts/troubleshooting
 
-    # Remove the _index.md from directory creation as it should be a file, not a directory
+    # Remove any existing index files
     rm -rf content/containers/_index.md
     rm -rf content/security/_index.md
     rm -rf content/posts/_index.md
@@ -36,16 +43,9 @@ if [ ! -d "/var/www/hugo/site" ]; then
     # Ensure proper permissions
     chmod -R 755 content/
 
-    # Create the directory structure for the theme
-    mkdir -p themes/paper/layouts/_default
-    mkdir -p themes/paper/layouts/partials
-
     # Debug: List the structure
     echo "Content structure:"
     ls -R content/
-
-    # Force Hugo to rebuild the site
-    hugo --cleanDestinationDir --verbose
 
     # Create hugo.toml with updated structure
     cat > hugo.toml <<EOL
@@ -54,36 +54,20 @@ languageCode = 'en-us'
 title = 'Inception'
 theme = 'paper'
 
-[markup]
-  [markup.goldmark]
-    [markup.goldmark.renderer]
-      unsafe = true
-
-[taxonomies]
-  category = "categories"
-  tag = "tags"
-
-[permalinks]
-  posts = "/:year/:month/:title/"
-  
-[outputs]
-  home = ["HTML", "RSS"]
-  section = ["HTML", "RSS"]
-
+# Basic parameters
 [params]
-  darkMode = true
+  # Theme parameters
+  github = 'mrioshe42'
   avatar = '/images/42logo.png'
-  github = 'mrioshe42'        
-  rss = true          
   name = 'Inception Project Documentation'
   bio = 'Docker Infrastructure Setup with Security Measures'
-
-[params.style]
-  darkestColor = "#242930"
-  darkColor = "#353b43"
-  lightColor = "#afbac4"
-  lightestColor = "#ffffff"
-  primaryColor = "#57cc8a"
+  
+  # Default theme settings - these ensure proper styling
+  defaultTheme = "auto"  # auto, dark, or light
+  
+  # Disable features we don't need
+  disableHLJS = true    # We're using our own code highlighting
+  monoDarkIcon = true   # Use monochrome icons in dark mode
 
 [menu]
   [[menu.main]]
@@ -103,22 +87,14 @@ theme = 'paper'
     name = "Troubleshooting"
     url = "/posts/troubleshooting/"
     weight = 40
-EOL
-
-cat > themes/paper/layouts/_default/baseof.html <<EOL
-<!DOCTYPE html>
-<html lang="{{ .Site.LanguageCode }}">
-<head>
-    {{ partial "head.html" . }}
-</head>
-<body>
-    {{ partial "header.html" . }}
-    <main class="main">
-        {{ block "main" . }}{{ end }}
-    </main>
-    {{ partial "footer.html" . }}
-</body>
-</html>
+# Markdown processing
+[markup]
+  [markup.highlight]
+    codeFences = true
+    guessSyntax = true
+    lineNos = false
+    noClasses = false
+    tabWidth = 4
 EOL
 
 # Update the main page content
@@ -693,6 +669,12 @@ fail2ban-client status
 - [NGINX Docs](https://nginx.org/en/docs/)
 - [MariaDB Knowledge Base](https://mariadb.com/kb/en/)
 EOL
+   # Force Hugo to rebuild the site
+    hugo --cleanDestinationDir --verbose
+
+    # Rest of your content creation remains the same...
+    # (Keep all your existing content creation sections)
+
     # Commit changes
     git add .
     git commit -m "Updated documentation structure with security focus"
