@@ -22,7 +22,7 @@ if [ ! -d "/var/www/hugo/site" ]; then
    rm -rf content/containers/_index.md
    rm -rf content/security/_index.md
    rm -rf content/posts/_index.md
-
+   mkdir -p content/{containers/{nginx,wordpress,mariadb},security/{fail2ban,ssl,docker,wordpress}}
    touch content/_index.md
    touch content/containers/_index.md
    touch content/security/_index.md
@@ -32,10 +32,21 @@ if [ ! -d "/var/www/hugo/site" ]; then
    touch content/containers/adminer.md
    touch content/security/docker.md
    touch content/security/wordpress.md
-    
-   chmod -R 755 content/
+      # Update the Quick Navigation section
+   sed -i 's|/containers/nginx/|containers/nginx/|g' content/_index.md
+   sed -i 's|/containers/wordpress/|containers/wordpress/|g' content/_index.md
+   sed -i 's|/containers/mariadb/|containers/mariadb/|g' content/_index.md
+   sed -i 's|/containers/redis/|containers/redis/|g' content/_index.md
+   sed -i 's|/containers/ftp/|containers/ftp/|g' content/_index.md
+   sed -i 's|/containers/adminer/|containers/adminer/|g' content/_index.md
+   sed -i 's|/security/fail2ban/|security/fail2ban/|g' content/_index.md
+   sed -i 's|/security/ssl/|security/ssl/|g' content/_index.md
+   sed -i 's|/security/docker/|security/docker/|g' content/_index.md
+   sed -i 's|/security/wordpress/|security/wordpress/|g' content/_index.md
+   sed -i 's|/containers/|containers/|g' content/_index.md
+sed -i 's|/security/|security/|g' content/_index.md
    ls -R content/
-
+chmod -R 755 content/
 mkdir -p archetypes
    cat > archetypes/default.md <<EOL
 ---
@@ -102,10 +113,6 @@ type: "page"
 layout: "single"
 ---
 
-# Welcome to Inception Project
-
-{{< figure src="/images/docker-diagram.png" alt="Docker Infrastructure" title="Project Infrastructure Overview" >}}
-
 ## Project Overview
 
 The Inception project is a comprehensive system administration exercise that focuses on Docker containerization and service orchestration. This project implements a complete web infrastructure using Docker containers.
@@ -160,19 +167,19 @@ draft: false
 ## Core Services
 
 ### NGINX
-- [NGINX Configuration](/containers/nginx/)
+- [NGINX Configuration](nginx/)
   - SSL/TLS setup
   - Proxy configuration
   - PHP-FPM integration
 
 ### WordPress
-- [WordPress & PHP-FPM Setup](/containers/wordpress/)
+- [WordPress & PHP-FPM Setup](wordpress/)
   - PHP-FPM configuration
   - WordPress installation
   - Performance tuning
 
 ### MariaDB
-- [MariaDB Database](/containers/mariadb/)
+- [MariaDB Database](mariadb/)
   - Initial setup
   - User management
   - Backup configuration
@@ -180,19 +187,19 @@ draft: false
 ## Additional Services
 
 ### Redis
-- [Redis Cache](/containers/redis/)
+- [Redis Cache](redis/)
   - Cache configuration
   - WordPress integration
   - Performance monitoring
 
 ### FTP
-- [FTP Server](/containers/ftp/)
+- [FTP Server](ftp/)
   - VSFTPD setup
   - Security measures
   - User management
 
 ### Adminer
-- [Adminer](/containers/adminer/)
+- [Adminer](adminer/)
   - Database management
   - Web interface setup
   - Access control
@@ -204,8 +211,6 @@ title: "NGINX Setup Guide"
 date: $(date +%Y-%m-%d)
 draft: false
 ---
-
-# NGINX Container Setup
 
 ## Configuration Steps
 
@@ -265,8 +270,6 @@ date: $(date +%Y-%m-%d)
 draft: false
 ---
 
-# WordPress and PHP-FPM Configuration
-
 ## Installation Steps
 
 1. **PHP-FPM Setup**
@@ -307,8 +310,6 @@ title: "MariaDB Setup"
 date: $(date +%Y-%m-%d)
 draft: false
 ---
-
-# MariaDB Database Configuration
 
 ## Setup Instructions
 
@@ -353,13 +354,13 @@ draft: false
 ## Access Control
 
 ### Fail2Ban
-- [Fail2Ban Configuration](/security/fail2ban/)
+- [Fail2Ban Configuration](fail2ban/)
   - Brute force protection
   - Custom jail setup
   - Login security
 
 ### SSL/TLS
-- [SSL/TLS Security](/security/ssl/)
+- [SSL/TLS Security](ssl/)
   - Certificate management
   - Protocol configuration
   - Security headers
@@ -367,13 +368,13 @@ draft: false
 ## Container Security
 
 ### Docker
-- [Docker Security](/security/docker/)
+- [Docker Security](docker/)
   - Container isolation
   - Image hardening
   - Runtime protection
 
 ### WordPress
-- [WordPress Security](/security/wordpress/)
+- [WordPress Security](wordpress/)
   - Core hardening
   - Plugin security
   - Access control
@@ -385,8 +386,6 @@ title: "Fail2Ban Configuration"
 date: 2024-12-19
 draft: false
 ---
-
-# Fail2Ban Security Implementation
 
 ## Overview
 Fail2Ban is implemented in our Inception project to protect various services against brute-force attacks and unauthorized access attempts.
@@ -539,8 +538,6 @@ date: $(date +%Y-%m-%d)
 draft: false
 ---
 
-# SSL/TLS Security Configuration
-
 ## Overview
 Our Inception project implements robust SSL/TLS security measures to ensure encrypted communication between clients and services.
 
@@ -637,8 +634,6 @@ date: 2024-12-20
 draft: false
 ---
 
-# Redis Cache Configuration
-
 ## Overview
 Redis is implemented as a caching layer to improve WordPress performance by storing frequently accessed data in memory.
 
@@ -728,8 +723,6 @@ date: 2024-12-20
 draft: false
 ---
 
-# FTP Server Configuration
-
 ## Overview
 Setup and configuration of a secure FTP server for file transfers in the Inception infrastructure.
 
@@ -799,8 +792,6 @@ date: 2024-12-20
 draft: false
 ---
 
-# Adminer Database Management
-
 ## Overview
 Installation and configuration of Adminer for database administration.
 
@@ -849,8 +840,6 @@ title: "Docker Security"
 date: 2024-12-20
 draft: false
 ---
-
-# Docker Security Implementation
 
 ## Overview
 Security best practices and configurations for Docker containers in the Inception project.
@@ -903,8 +892,6 @@ date: 2024-12-20
 draft: false
 ---
 
-# WordPress Security Configuration
-
 ## Overview
 Comprehensive security measures for the WordPress installation.
 
@@ -943,7 +930,15 @@ Comprehensive security measures for the WordPress installation.
    - Protect sensitive files
    - Secure media uploads
 EOL
+ # Update navigation in all container pages
+   find content/containers -type f -name "*.md" -exec sed -i 's|- \[Back to Container Guides\](/containers/)|- [Back to Container Guides](../)|g' {} \;
+   find content/containers -type f -name "*.md" -exec sed -i 's|- \[Back to Home\](/)|[Back to Home](../../)|g' {} \;
+   find content/containers -type f -name "*.md" -exec sed -i 's|- \[Security Configuration\](/security/)|- [Security Configuration](../../security/)|g' {} \;
 
+   # Update navigation in all security pages
+   find content/security -type f -name "*.md" -exec sed -i 's|- \[Back to Security\](../security/)|- [Back to Security](../)|g' {} \;
+   find content/security -type f -name "*.md" -exec sed -i 's|- \[Back to Home\](/)|[Back to Home](../../)|g' {} \;
+   
    rm -rf content/posts
    rm -rf public/
    rm -rf resources/
