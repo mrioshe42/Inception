@@ -2,37 +2,36 @@
 
 # Create new Hugo site if it doesn't exist
 if [ ! -d "/var/www/hugo/site" ]; then
-    hugo new site site
-    cd site || exit
+   hugo new site site
+   cd site || exit
+   git init
+   git config --global --add safe.directory /var/www/hugo/site
 
-    git init
-    git config --global --add safe.directory /var/www/hugo/site
+   git submodule add https://github.com/nanxiaobei/hugo-paper.git themes/paper
+   git submodule init
+   git submodule update --init --recursive
+   git submodule update --remote --merge
 
-    git submodule add https://github.com/nanxiaobei/hugo-paper.git themes/paper
-    git submodule init
-    git submodule update --init --recursive
-    git submodule update --remote --merge
+   if [ ! -d "themes/paper" ]; then
+       echo "Error: Theme installation failed"
+       exit 1
+   fi
 
-    if [ ! -d "themes/paper" ]; then
-        echo "Error: Theme installation failed"
-        exit 1
-    fi
+   mkdir -p static/images
+   mkdir -p content/{containers,security,posts}
+   mkdir -p content/containers/{nginx,wordpress,mariadb}
+   mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
+   mkdir -p content/posts/troubleshooting
 
-    mkdir -p static/images
-    mkdir -p content/{containers,security,posts}
-    mkdir -p content/containers/{nginx,wordpress,mariadb}
-    mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
-    mkdir -p content/posts/troubleshooting
+   rm -rf content/containers/_index.md
+   rm -rf content/security/_index.md
+   rm -rf content/posts/_index.md
 
-    rm -rf content/containers/_index.md
-    rm -rf content/security/_index.md
-    rm -rf content/posts/_index.md
-
-    touch content/_index.md
-    touch content/containers/_index.md
-    touch content/security/_index.md
-    touch content/posts/_index.md
-    touch content/containers/redis.md
+   touch content/_index.md
+   touch content/containers/_index.md
+   touch content/security/_index.md
+   touch content/posts/_index.md
+   touch content/containers/redis.md
    touch content/containers/ftp.md
    touch content/containers/adminer.md
    touch content/security/docker.md
@@ -47,71 +46,48 @@ languageCode = 'en-us'
 title = 'Inception'
 theme = 'paper'
 
-# Basic parameters
+# Theme parameters
 [params]
-  # Theme parameters
-  github = 'mrioshe42'
+  # Color and appearance
+  color = 'gray'
   avatar = '/images/42logo.png'
   name = 'Inception Project Documentation'
   bio = 'Docker Infrastructure Setup with Security Measures'
   
-  # Default theme settings - these ensure proper styling
-  defaultTheme = "auto"  # auto, dark, or light
+  # Enable dark mode
+  defaultTheme = "dark"
+  monoDarkIcon = true
   
-  # Disable features we don't need
-  disableHLJS = true    # We're using our own code highlighting
-  monoDarkIcon = true   # Use monochrome icons in dark mode
+  # Social links
+  github = 'mrioshe42'
+  
+  # Show dates
+  showDate = true
+  
+  # Show full content
+  showFullContent = true
 
 [menu]
   [[menu.main]]
-    identifier = "containers"
-    name = "Container Setup"
-    url = "/containers/"
-    weight = 10
-  
+    name = "Home"
+    url = "/"
+    weight = 1
   [[menu.main]]
-    identifier = "security"
+    name = "Containers"
+    url = "/containers/"
+    weight = 2
+  [[menu.main]]
     name = "Security"
     url = "/security/"
-    weight = 20
-  
+    weight = 3
   [[menu.main]]
-    identifier = "troubleshooting"
     name = "Troubleshooting"
     url = "/posts/troubleshooting/"
-    weight = 30
-
-  # Add submenus for containers
-  [[menu.containers]]
-    name = "NGINX"
-    url = "/containers/nginx/"
-    weight = 1
-  [[menu.containers]]
-    name = "WordPress"
-    url = "/containers/wordpress/"
-    weight = 2
-  [[menu.containers]]
-    name = "MariaDB"
-    url = "/containers/mariadb/"
-    weight = 3
-
-  # Add submenus for security
-  [[menu.security]]
-    name = "Fail2Ban"
-    url = "/security/fail2ban/"
-    weight = 1
-  [[menu.security]]
-    name = "SSL/TLS"
-    url = "/security/ssl/"
-    weight = 2
-  [[menu.security]]
-    name = "Docker Security"
-    url = "/security/docker/"
-    weight = 3
-  [[menu.security]]
-    name = "WordPress Security"
-    url = "/security/wordpress/"
     weight = 4
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
 EOL
 
 
@@ -641,8 +617,8 @@ EOL
 cat > content/posts/troubleshooting/_index.md <<EOL
 ---
 title: "Troubleshooting Guide"
-date: $(date +%Y-%m-%d)
-draft: false
+menu: main
+weight: 30
 ---
 
 # Troubleshooting Guide
