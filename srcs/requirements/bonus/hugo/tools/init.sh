@@ -18,10 +18,6 @@ if [ ! -d "/var/www/hugo/site" ]; then
    fi
 
    mkdir -p static/images
-   mkdir -p content/{containers,security,posts}
-   mkdir -p content/containers/{nginx,wordpress,mariadb}
-   mkdir -p content/security/{fail2ban,ssl,docker,wordpress}
-   mkdir -p content/posts/troubleshooting
 
    rm -rf content/containers/_index.md
    rm -rf content/security/_index.md
@@ -37,8 +33,18 @@ if [ ! -d "/var/www/hugo/site" ]; then
    touch content/security/docker.md
    touch content/security/wordpress.md
     
-    chmod -R 755 content/
-    ls -R content/
+   chmod -R 755 content/
+   ls -R content/
+
+mkdir -p archetypes
+   cat > archetypes/default.md <<EOL
+---
+title: "{{ replace .Name "-" " " | title }}"
+date: {{ .Date }}
+draft: false
+weight: {{ .Site.RegularPages | len }}
+---
+EOL
 
 cat > hugo.toml <<EOL
 baseURL = 'https://hugo.${DOMAIN_NAME}'
@@ -46,26 +52,23 @@ languageCode = 'en-us'
 title = 'Inception'
 theme = 'paper'
 
-# Theme parameters
 [params]
-  # Color and appearance
+  # Theme appearance
   color = 'gray'
   avatar = '/images/42logo.png'
   name = 'Inception Project Documentation'
   bio = 'Docker Infrastructure Setup with Security Measures'
   
-  # Enable dark mode
+  # Theme behavior
   defaultTheme = "dark"
   monoDarkIcon = true
+  showDate = true
+  showFullContent = true
+  mainSections = ["containers", "security"]
+  showBreadcrumbs = true
   
   # Social links
   github = 'mrioshe42'
-  
-  # Show dates
-  showDate = true
-  
-  # Show full content
-  showFullContent = true
 
 [menu]
   [[menu.main]]
@@ -80,14 +83,13 @@ theme = 'paper'
     name = "Security"
     url = "/security/"
     weight = 3
-  [[menu.main]]
-    name = "Troubleshooting"
-    url = "/posts/troubleshooting/"
-    weight = 4
 
-[markup]
-  [markup.goldmark.renderer]
-    unsafe = true
+[markup.goldmark.renderer]
+  unsafe = true
+
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS", "JSON"]
 EOL
 
 
@@ -143,41 +145,6 @@ The Inception project is a comprehensive system administration exercise that foc
 - [Docker Security](/security/docker/)
 - [WordPress Security](/security/wordpress/)
 
-### Support
-- [Troubleshooting Guide](/posts/troubleshooting/)
-
-## Getting Started
-
-1. **Clone Repository**
-\`\`\`bash
-git clone https://github.com/mrioshe42/Inception.git
-cd Inception
-\`\`\`
-
-2. **Environment Setup**
-\`\`\`bash
-cp .env.example .env
-# Edit .env with your configuration
-\`\`\`
-
-3. **Build and Deploy**
-\`\`\`bash
-make all
-\`\`\`
-
-## System Requirements
-
-- Docker Engine
-- Docker Compose
-- Make utility
-- Minimum 4GB RAM
-- 10GB free disk space
-
-## Network Requirements
-
-- Port 443 (HTTPS)
-- Port 21 (FTP)
-- Port 22 (SSH)
 EOL
 
 
@@ -190,19 +157,45 @@ draft: false
 
 # Container Setup Guides
 
-## Available Guides
+## Core Services
 
-### Core Services
+### NGINX
 - [NGINX Configuration](/containers/nginx/)
+  - SSL/TLS setup
+  - Proxy configuration
+  - PHP-FPM integration
+
+### WordPress
 - [WordPress & PHP-FPM Setup](/containers/wordpress/)
+  - PHP-FPM configuration
+  - WordPress installation
+  - Performance tuning
+
+### MariaDB
 - [MariaDB Database](/containers/mariadb/)
+  - Initial setup
+  - User management
+  - Backup configuration
 
-### Additional Services
+## Additional Services
+
+### Redis
 - [Redis Cache](/containers/redis/)
-- [FTP Server](/containers/ftp/)
-- [Adminer](/containers/adminer/)
+  - Cache configuration
+  - WordPress integration
+  - Performance monitoring
 
-[Back to Home](/)
+### FTP
+- [FTP Server](/containers/ftp/)
+  - VSFTPD setup
+  - Security measures
+  - User management
+
+### Adminer
+- [Adminer](/containers/adminer/)
+  - Database management
+  - Web interface setup
+  - Access control
 EOL
 
 cat > content/containers/nginx.md <<EOL
@@ -357,10 +350,33 @@ draft: false
 
 # Security Implementation Guide
 
-- [Fail2Ban Configuration](/security/fail2ban)
-- [SSL/TLS Security](/security/ssl)
-- [Docker Security](/security/docker)
-- [WordPress Security](/security/wordpress)
+## Access Control
+
+### Fail2Ban
+- [Fail2Ban Configuration](/security/fail2ban/)
+  - Brute force protection
+  - Custom jail setup
+  - Login security
+
+### SSL/TLS
+- [SSL/TLS Security](/security/ssl/)
+  - Certificate management
+  - Protocol configuration
+  - Security headers
+
+## Container Security
+
+### Docker
+- [Docker Security](/security/docker/)
+  - Container isolation
+  - Image hardening
+  - Runtime protection
+
+### WordPress
+- [WordPress Security](/security/wordpress/)
+  - Core hardening
+  - Plugin security
+  - Access control
 EOL
 
 cat > content/security/fail2ban.md <<EOL
@@ -614,100 +630,329 @@ add_header X-XSS-Protection "1; mode=block";
 - Client compatibility issues
 EOL
 
-cat > content/posts/troubleshooting/_index.md <<EOL
+cat > content/containers/redis.md <<EOL
 ---
-title: "Troubleshooting Guide"
-menu: main
-weight: 30
+title: "Redis Cache Setup"
+date: 2024-12-20
+draft: false
 ---
 
-# Troubleshooting Guide
+# Redis Cache Configuration
 
-## Common Issues and Solutions
+## Overview
+Redis is implemented as a caching layer to improve WordPress performance by storing frequently accessed data in memory.
 
-### Container Issues
+## Installation Steps
 
-1. **Container Won't Start**
-   - Check logs: \`docker logs <container_name>\`
-   - Verify ports: \`docker port <container_name>\`
-   - Check volume permissions
+1. **Docker Configuration**
+   \`\`\`dockerfile
+   FROM redis:alpine
 
-2. **Database Connection Issues**
-   - Verify environment variables
-   - Check network connectivity
-   - Confirm MariaDB service is running
+   # Copy custom Redis configuration
+   COPY redis.conf /usr/local/etc/redis/redis.conf
 
-### WordPress Issues
+   # Expose Redis port
+   EXPOSE 6379
 
-1. **White Screen of Death**
-   - Enable WP_DEBUG in wp-config.php
-   - Check PHP error logs
-   - Disable plugins temporarily
+   # Start Redis with custom config
+   CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+   \`\`\`
 
-2. **Cannot Upload Media**
-   - Check directory permissions
-   - Verify PHP upload limits
-   - Check available disk space
+2. **Basic Configuration**
+   \`\`\`conf
+   # Redis configuration
+   maxmemory 256mb
+   maxmemory-policy allkeys-lru
+   appendonly yes
+   protected-mode no
+   \`\`\`
 
-### NGINX Issues
+3. **WordPress Integration**
+   - Install Redis Object Cache plugin
+   - Add Redis configuration to wp-config.php:
+   \`\`\`php
+   define('WP_CACHE', true);
+   define('WP_REDIS_HOST', 'redis');
+   define('WP_REDIS_PORT', 6379);
+   \`\`\`
 
-1. **SSL Certificate Problems**
-   - Verify certificate paths
-   - Check certificate validity
-   - Confirm proper permissions
+## Performance Tuning
 
-2. **502 Bad Gateway**
-   - Check PHP-FPM status
-   - Verify fastcgi_pass configuration
-   - Check error logs
+1. **Memory Management**
+   - Adjust maxmemory based on available resources
+   - Monitor memory usage patterns
+   - Configure appropriate eviction policies
 
-### Security Issues
+2. **Persistence Settings**
+   - Enable AOF for data persistence
+   - Configure save points
+   - Backup strategy
 
-1. **Fail2Ban Not Working**
-   - Check service status
-   - Verify log paths
-   - Review jail configurations
+## Monitoring
 
-2. **SSL/TLS Warnings**
-   - Update cipher configurations
-   - Check protocol settings
-   - Verify certificate chain
+1. **Key Metrics**
+   - Memory usage
+   - Hit/miss ratio
+   - Connected clients
+   - Eviction stats
 
-## Debug Commands
+2. **Commands**
+   \`\`\`bash
+   # Monitor Redis
+   redis-cli monitor
 
-\`\`\`bash
-# Check container status
-docker ps -a
+   # Check stats
+   redis-cli info
 
-# View container logs
-docker logs <container_name>
+   # Memory analysis
+   redis-cli memory stats
+   \`\`\`
 
-# Check NGINX configuration
-nginx -t
+## Security Considerations
 
-# Test PHP-FPM
-cgi-fcgi -bind -connect 127.0.0.1:9000
+1. **Network Security**
+   - Restrict access to Redis port
+   - Use password authentication
+   - Configure bind addresses
 
-# View MariaDB logs
-tail -f /var/log/mysql/error.log
-
-# Check Fail2Ban status
-fail2ban-client status
-\`\`\`
-
-## Support Resources
-
-- [Docker Documentation](https://docs.docker.com/)
-- [WordPress Debugging](https://wordpress.org/support/article/debugging-in-wordpress/)
-- [NGINX Docs](https://nginx.org/en/docs/)
-- [MariaDB Knowledge Base](https://mariadb.com/kb/en/)
+2. **Data Protection**
+   - Enable encrypted connections
+   - Regular backups
+   - Access control lists
 EOL
-    hugo --cleanDestinationDir --verbose
 
-    git add .
-    git commit -m "Updated documentation structure with security focus"
+cat > content/containers/ftp.md <<EOL
+---
+title: "FTP Server Setup"
+date: 2024-12-20
+draft: false
+---
+
+# FTP Server Configuration
+
+## Overview
+Setup and configuration of a secure FTP server for file transfers in the Inception infrastructure.
+
+## Installation Steps
+
+1. **Docker Configuration**
+   \`\`\`dockerfile
+   FROM alpine:latest
+   
+   RUN apk add --no-cache vsftpd
+   
+   COPY vsftpd.conf /etc/vsftpd/vsftpd.conf
+   
+   EXPOSE 21
+   \`\`\`
+
+2. **Basic Configuration**
+   \`\`\`conf
+   # FTP configuration
+   listen=YES
+   anonymous_enable=NO
+   local_enable=YES
+   write_enable=YES
+   chroot_local_user=YES
+   allow_writeable_chroot=YES
+   pasv_enable=YES
+   pasv_min_port=21100
+   pasv_max_port=21110
+   \`\`\`
+
+3. **Security Measures**
+   - SSL/TLS encryption
+   - Chroot jail configuration
+   - User access control
+   - Passive mode settings
+
+## Usage Guide
+
+1. **Connection Details**
+   - Port: 21 (FTP)
+   - Passive Ports: 21100-21110
+   - Authentication: Local user accounts
+
+2. **Commands**
+   \`\`\`bash
+   # Start FTP service
+   vsftpd /etc/vsftpd/vsftpd.conf
+   
+   # Monitor logs
+   tail -f /var/log/vsftpd.log
+   \`\`\`
+
+## Troubleshooting
+
+1. **Common Issues**
+   - Connection timeouts
+   - Authentication failures
+   - Passive mode problems
+   - Permission errors
+EOL
+
+# Add content for Adminer
+cat > content/containers/adminer.md <<EOL
+---
+title: "Adminer Setup"
+date: 2024-12-20
+draft: false
+---
+
+# Adminer Database Management
+
+## Overview
+Installation and configuration of Adminer for database administration.
+
+## Setup Instructions
+
+1. **Docker Configuration**
+   \`\`\`dockerfile
+   FROM adminer:latest
+   
+   EXPOSE 8080
+   \`\`\`
+
+2. **NGINX Proxy Configuration**
+   \`\`\`nginx
+   location /adminer {
+       proxy_pass http://adminer:8080;
+       proxy_set_header Host \$host;
+       proxy_set_header X-Real-IP \$remote_addr;
+   }
+   \`\`\`
+
+3. **Security Measures**
+   - Access restrictions
+   - SSL/TLS encryption
+   - IP whitelisting
+   - Authentication requirements
+
+## Usage Guide
+
+1. **Accessing Adminer**
+   - URL: https://your-domain/adminer
+   - Supported databases: MySQL, PostgreSQL, SQLite
+   - Login with database credentials
+
+2. **Key Features**
+   - Database management
+   - Table operations
+   - SQL query execution
+   - Data import/export
+EOL
+
+# Add content for Docker Security
+cat > content/security/docker.md <<EOL
+---
+title: "Docker Security"
+date: 2024-12-20
+draft: false
+---
+
+# Docker Security Implementation
+
+## Overview
+Security best practices and configurations for Docker containers in the Inception project.
+
+## Security Measures
+
+1. **Container Isolation**
+   - Network segmentation
+   - Resource limitations
+   - User namespace mapping
+   - Container privileges
+
+2. **Image Security**
+   \`\`\`dockerfile
+   # Use specific versions
+   FROM alpine:3.14
+   
+   # Run as non-root
+   USER nobody
+   
+   # Minimal installations
+   RUN apk add --no-cache package
+   \`\`\`
+
+3. **Runtime Security**
+   - Read-only root filesystem
+   - Drop capabilities
+   - Secure computing modes
+   - Resource quotas
+
+## Best Practices
+
+1. **Container Hardening**
+   - Regular security updates
+   - Minimal base images
+   - Proper secret management
+   - Health monitoring
+
+2. **Network Security**
+   - Internal networks
+   - Port exposure limits
+   - TLS authentication
+   - Network policies
+EOL
+
+cat > content/security/wordpress.md <<EOL
+---
+title: "WordPress Security"
+date: 2024-12-20
+draft: false
+---
+
+# WordPress Security Configuration
+
+## Overview
+Comprehensive security measures for the WordPress installation.
+
+## Security Implementations
+
+1. **Core Security**
+   - Regular updates
+   - Strong passwords
+   - File permissions
+   - wp-config.php protection
+
+2. **Plugin Security**
+   \`\`\`php
+   // Security plugin configurations
+   define('DISALLOW_FILE_EDIT', true);
+   define('WP_AUTO_UPDATE_CORE', true);
+   \`\`\`
+
+3. **Access Control**
+   - Login attempt limits
+   - Two-factor authentication
+   - Role-based access
+   - Admin area protection
+
+## Best Practices
+
+1. **Maintenance**
+   - Regular backups
+   - Security scans
+   - Log monitoring
+   - Update management
+
+2. **Hardening Measures**
+   - Remove version information
+   - Disable XML-RPC
+   - Protect sensitive files
+   - Secure media uploads
+EOL
+
+   rm -rf content/posts
+   rm -rf public/
+   rm -rf resources/
+   hugo --cleanDestinationDir --verbose
+   find content/ -type f -exec sed -i '/troubleshooting/d' {} +
+   git add .
+   git commit -m "Updated documentation structure with security focus"
 else
-    cd site || exit
+   cd site || exit
 fi
 
 hugo server \
@@ -717,4 +962,5 @@ hugo server \
     --appendPort=false \
     --disableFastRender \
     --ignoreCache \
-    --verbose
+    --verbose \
+    --gc
