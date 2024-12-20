@@ -6,10 +6,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Create necessary directories
 RUN mkdir -p /var/www/html /run/php
 
-# Download Adminer
 RUN wget https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php -O /var/www/html/index.php && \
     chown -R www-data:www-data /var/www/html
 

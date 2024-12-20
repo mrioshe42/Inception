@@ -1,5 +1,4 @@
 <?php
-// Define WordPress URLs first (before any potential usage)
 if (!defined('WP_HOME')) {
     define('WP_HOME', 'https://' . getenv('DOMAIN_NAME'));
 }
@@ -7,7 +6,6 @@ if (!defined('WP_SITEURL')) {
     define('WP_SITEURL', WP_HOME);
 }
 
-// Database Configuration
 define('DB_NAME', getenv('WORDPRESS_DB_NAME'));
 define('DB_USER', getenv('WORDPRESS_DB_USER'));
 define('DB_PASSWORD', file_get_contents('/run/secrets/mysql_password'));
@@ -15,7 +13,6 @@ define('DB_HOST', getenv('WORDPRESS_DB_HOST'));
 define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');
 
-// Authentication Keys and Salts
 define('AUTH_KEY',         'put your unique phrase here');
 define('SECURE_AUTH_KEY',  'put your unique phrase here');
 define('LOGGED_IN_KEY',    'put your unique phrase here');

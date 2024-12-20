@@ -29,7 +29,6 @@ RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.ph
 
 RUN mkdir -p /var/www/html /run/php
 
-# Download and setup WordPress
 WORKDIR /var/www/html
 RUN wget https://wordpress.org/wordpress-5.9.tar.gz && \
     tar -xzf wordpress-5.9.tar.gz && \
@@ -49,10 +48,8 @@ RUN wget https://downloads.wordpress.org/plugin/redis-cache.2.5.4.zip && \
     unzip redis-cache.2.5.4.zip -d /var/www/html/wp-content/plugins/ && \
     rm redis-cache.2.5.4.zip
 
-# Configure PHP-FPM to run in foreground
 RUN sed -i 's/;daemonize = yes/daemonize = no/g' /etc/php/7.4/fpm/php-fpm.conf
 
-# Verify Redis extension is enabled
 RUN php -m | grep redis
 
 EXPOSE 9000

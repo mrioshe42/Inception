@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure git
 RUN git config --global init.defaultBranch main && \
     git config --global user.email "hugo@42.fr" && \
     git config --global user.name "Hugo Site"
@@ -16,13 +15,11 @@ RUN curl -L https://github.com/gohugoio/hugo/releases/download/v0.121.1/hugo_0.1
 
 WORKDIR /var/www/hugo
 
-# Remove any existing site directory to ensure clean state
 RUN rm -rf site
 
 COPY tools/init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
 
-# Copy static content
 COPY tools/static/images/* /tmp/
 
 EXPOSE 1313

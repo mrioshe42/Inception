@@ -13,11 +13,9 @@ echo "Creating FTP user ${FTP_USER}..."
 adduser --disabled-password --gecos "" "${FTP_USER}"
 echo "${FTP_USER}:${FTP_PASS}" | chpasswd
 
-# Ensure directories exist
 mkdir -p /var/run/vsftpd/empty
 mkdir -p /var/www/html
 
-# Set permissions
 chown -R "${FTP_USER}":www-data /var/www/html
 chmod -R 775 /var/www/html
 
