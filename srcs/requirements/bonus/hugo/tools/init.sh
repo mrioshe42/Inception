@@ -69,24 +69,21 @@ theme = 'paper'
 [outputs]
   home = ["HTML", "RSS"]
   section = ["HTML", "RSS"]
-  
-[params.home]
-  # Number of posts to show on home page
-  numberOfPosts = 5
-  
-  # Show full content instead of summary
-  fullContent = true
 
 [params]
-  color = 'gray'
   darkMode = true
   avatar = '/images/42logo.png'
   github = 'mrioshe42'        
   rss = true          
   name = 'Inception Project Documentation'
   bio = 'Docker Infrastructure Setup with Security Measures'
-  monoDarkIcon = true
-  styleDark = true
+
+[params.style]
+  darkestColor = "#242930"
+  darkColor = "#353b43"
+  lightColor = "#afbac4"
+  lightestColor = "#ffffff"
+  primaryColor = "#57cc8a"
 
 [menu]
   [[menu.main]]
