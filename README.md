@@ -23,22 +23,17 @@ A Docker containerization project that sets up a complete web development enviro
 1. Clone the repository:
 
 git clone https://github.com/mrioshe42/Inception.git
+
 cd Inception
 
 ## 📁 Project Structure
-srcs/: Source files and configurations
-docker-compose.yml: Services orchestration
-requirements/: Individual service configurations
-nginx/: NGINX configuration
-wordpress/: WordPress setup
-mariadb/: Database configuration
-Makefile: Build and deployment commands
-
-## 🔍 Usage
-Start containers: make up
-Stop containers: make down
-Clean environment: make clean
-Show container status: make ps
+- srcs/: Source files and configurations
+- docker-compose.yml: Services orchestration
+- requirements/: Individual service configurations
+- nginx/: NGINX configuration
+- wordpress/: WordPress setup
+- mariadb/: Database configuration
+- Makefile: Build and deployment commands
 
 ## 👤 Author
 mrioshe42
